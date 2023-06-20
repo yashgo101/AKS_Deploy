@@ -1,0 +1,57 @@
+version: '3'
+
+services:
+
+    db:
+      image: mysql:latest
+      container_name: mysql-db2   
+      environment:
+        - MYSQL_ROOT_PASSWORD=root
+        - MYSQL_USER=host
+        - MYSQL_PASSWORD=player
+        - MYSQL_DATABASE=employeedb
+      ports:
+        - '3306:3306'
+      restart: always
+      volumes:
+        - mysql-db2:/var/lib/mysql
+
+    adminer:
+      image: adminer:latest
+      environment: 
+          ADMINER_DEFAULT_SERVER: db
+          ADMINER_DESIGN: galkaev
+      ports: 
+        - '8082:8082'
+      restart: always
+      depends_on:
+        - db
+    
+    spring-backend:
+      image: nodespring-backend-img
+      container_name: spring-backend
+      build:
+        context: ./Spring-Boot-CRUD-Example
+        dockerfile: Dockerfile
+      ports:
+        - '8089:8089'
+      restart: always
+      depends_on:
+        - db
+      env_file:
+        - .env
+
+    react-frontend:
+      image: nodereact-frontend-img
+      container_name: react-frontend
+      build:
+        context: ./employeecrud
+        dockerfile: Dockerfile
+      ports:
+        - "8083:8080"
+      restart: always
+      depends_on:
+        - spring-backend
+
+volumes:
+  mysql-db2:

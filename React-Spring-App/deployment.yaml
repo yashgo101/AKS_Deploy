@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: web-mysql
+  template:
+    metadata:
+      labels:
+        component: web-mysql
+    spec:
+      containers:
+        - name: mysql-container
+          image: mysql:latest
+          envFrom:
+            - secretRef:
+                name: plaintext-secret
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - mountPath: /var/lib/mysql
+              name: mysql-db2
+      volumes:
+        - name: mysql-db2
+          hostPath:
+            path: /data
+            type: DirectoryOrCreate
+      restartPolicy: Always
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adminer-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: web-adminer
+  template:
+    metadata:
+      labels:
+        component: web-adminer
+    spec:
+      containers:
+        - name: adminer
+          image: adminer:latest
+          envFrom:
+            - secretRef:
+                name: plaintext-secret
+          ports:
+            - containerPort: 8082
+      restartPolicy: Always
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: web-backend
+  template:
+    metadata:
+      labels:
+        component: web-backend
+    spec:
+      containers:
+        - name: spring-backend
+          image: yashgoyal101/nodespring-backend-img
+          envFrom:
+            - secretRef:
+                name: plaintext-secret
+          ports:
+            - containerPort: 8089
+      restartPolicy: Always
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: web-frontend
+  template:
+    metadata:
+      labels:
+        component: web-frontend
+    spec:
+      containers:
+        - name: react-frontend
+          image: yashgoyal101/nodereact-frontend-img
+          ports:
+            - containerPort: 8080
+      restartPolicy: Always

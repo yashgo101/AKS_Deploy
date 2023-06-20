@@ -1,0 +1,117 @@
+kubectl delete pod podbackend
+kubectl delete pod podfrontend
+kubectl delete svc backend-svc
+kubectl delete svc frontend-svc
+
+kubectl delete deployment backend-deployment
+kubectl delete deployment frontend-deployment
+kubectl delete svc backend-svc
+kubectl delete svc frontend-svc
+
+kubectl delete deployment backend-deployment; kubectl delete deployment frontend-deployment; kubectl delete svc backend-svc; kubectl delete svc frontend-svc
+
+
+
+docker image build -t react-frontend-turtle .
+docker image build -t spring-backend-turtle .
+
+minikube image load react-frontend-turtle
+minikube image load spring-backend-turtle
+
+minikube image load nodespring-backend-img
+minikube image load nodereact-frontend-img
+
+minikube image rm react-frontend-turtle
+minikube image rm spring-backend-turtle
+
+kubectl apply -f pod.yaml
+kubectl apply -f service.yaml
+
+kubectl apply -f secret-plaintext.yaml
+kubectl apply -f deployment.yaml
+kubectl apply -f service.yaml
+
+kubectl port-forward podfrontend 8087:8080
+
+
+
+
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: podbackend
+  labels:
+    component: web-backend
+spec:
+  containers:
+    - name: spring-backend-container
+      image: spring-backend-turtle
+      env:
+      - name: SPRING_DATASOURCE_URL
+        value: jdbc:mysql://yashserver.mysql.database.azure.com:3306/employeedb?serverTimezone=UTC&createDatabaseIfNotExist=true
+      - name: SPRING_DATASOURCE_USERNAME
+        value: host
+      - name: SPRING_DATASOURCE_PASSWORD
+        value: player
+      imagePullPolicy: Never
+      ports:
+        - containerPort: 8089
+  restartPolicy: Always
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: podfrontend
+  labels:
+    component: web-frontend
+spec:
+  containers:
+    - name: react-frontend-container
+      image: react-frontend-turtle
+      imagePullPolicy: Never
+      ports:
+        - containerPort: 8080
+  restartPolicy: Always
+
+
+
+
+
+
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-svc
+spec:
+  ports:
+    - name: "8089"
+      port: 8089
+      targetPort: 8089
+  selector:
+    component: web-backend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-svc
+spec:
+  type: NodePort
+  ports:
+    - name: "8080"
+      port: 8080
+      targetPort: 8080
+      nodePort: 31515
+  selector:
+    component: web-frontend
+
+
+
+
+
+
+az aks create --resource-group Resgrp2 --name myNodeSpringAKSCluster --node-count 2 --generate-ssh-keys --attach-acr nodespringcontain
+
+az aks get-credentials --resource-group Resgrp2 --name myNodeSpringAKSCluster
